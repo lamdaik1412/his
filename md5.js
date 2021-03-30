@@ -137,7 +137,9 @@ function checkthe() {
 							d.maKetQua = "003.1";
 							d.gtTheTu = d.gtTheTuMoi;
 							d.gtTheDen = d.gtTheDenMoi;
+							
 						}
+					$("#sobhyt").val(d.maThe);
 						$("#mod_check_bhyt_hai").html(
 							"Đã KT " +
 								sobhyt.slice(0, 3) +

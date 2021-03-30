@@ -52,10 +52,10 @@ $('#mod_check_bhyt_hai').html("Đang KT ..."+sobhyt.slice(-3));
 $('#mod_check_bhyt_hai').attr("disabled", true);
 $("#chinamsinh").prop("checked")?namsinh=$("#namsinh").val().substring(6,10):namsinh=$("#namsinh").val();
 if (namsinh==""||namsinh.search("d")!=-1||namsinh.search("m")!=-1||namsinh.search("y")!=-1) namsinh="1992";
-		$.post( "https://egw.baohiemxahoi.gov.vn/api/token/take", { username: taikhoan, password:matkhau}).done(function( dtake ) {
+		$.post( "https://ctndaotao.bhxh.gov.vn/api/token/take", { username: taikhoan, password:matkhau}).done(function( dtake ) {
 			console.log(dtake);
 			if(dtake.maKetQua==200){
-				$.post("https://egw.baohiemxahoi.gov.vn/api/egw/NhanLichSuKCB2018?token="+dtake.APIKey.access_token+"&id_token="+dtake.APIKey.id_token+"&username="+taikhoan+"&password="+matkhau,{maThe:sobhyt,hoTen:hoten,ngaySinh:namsinh}).done(function( d ) {
+				$.post("https://ctndaotao.bhxh.gov.vn/api/egw/NhanLichSuKCB2018?token="+dtake.APIKey.access_token+"&id_token="+dtake.APIKey.id_token+"&username="+taikhoan+"&password="+matkhau,{maThe:sobhyt,hoTen:hoten,ngaySinh:namsinh}).done(function( d ) {
 					if(d.maKetQua=="003"&&d.maThe==d.maTheMoi){
 							d.maKetQua="003.1";
 							d.gtTheTu=d.gtTheTuMoi;

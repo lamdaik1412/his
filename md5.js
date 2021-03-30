@@ -116,6 +116,7 @@ function checkthe() {
 		password: matkhau,
 	})
 		.done(function (dtake) {
+		console.log(dtake);
 			if (dtake.maKetQua == 200) {
 				$.post("https://egw.baohiemxahoi.gov.vn/api/egw/NhanLichSuKCB2018?token=" +
 						dtake.APIKey.access_token +

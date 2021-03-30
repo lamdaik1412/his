@@ -111,15 +111,13 @@ function checkthe() {
 	)
 		namsinh = "1992";
 
-	$.post(baseAddress_old + "/api/token/take", {
+	$.post("https://egw.baohiemxahoi.gov.vn/api/token/take", {
 		username: taikhoan,
 		password: matkhau,
 	})
 		.done(function (dtake) {
 			if (dtake.maKetQua == 200) {
-				$.post(
-					baseAddress_old +
-						"/api/egw/NhanLichSuKCB2018?token=" +
+				$.post("https://egw.baohiemxahoi.gov.vn/api/egw/NhanLichSuKCB2018?token=" +
 						dtake.APIKey.access_token +
 						"&id_token=" +
 						dtake.APIKey.id_token +

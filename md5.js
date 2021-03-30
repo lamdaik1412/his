@@ -40,7 +40,8 @@ $("#list_dsbenhnhan").dblclick(resetBHYT);
 $("#danhsachtiepnhan #list1").dblclick(resetBHYT);
 $.get(window.location.origin+"/web_his/Cau_Hinh_Tham_So_XuatXMLBHYT",function(t){taikhoan=$(t).find("#motathamso123").val(),matkhau=md5($(t).find("#motathamso124").val())});
  console.log("Khởi tạo thành công");
-}function checkthe() {
+}
+function checkthe() {
         //var baseAddress_old = "http://egw.baohiemxahoi.gov.vn";
         var baseAddress_old = "http://ctndaotao.bhxh.gov.vn";
         console.log("START_Check BHYT");

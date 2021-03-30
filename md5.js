@@ -40,195 +40,837 @@ $("#list_dsbenhnhan").dblclick(resetBHYT);
 $("#danhsachtiepnhan #list1").dblclick(resetBHYT);
 $.get(window.location.origin+"/web_his/Cau_Hinh_Tham_So_XuatXMLBHYT",function(t){taikhoan=$(t).find("#motathamso123").val(),matkhau=md5($(t).find("#motathamso124").val())});
  console.log("Khởi tạo thành công");
-}
-function checkthe(){
-console.log("START_Check BHYT");
-resetBHYT();
-if($("#sobhyt").val().length>15){
-	$("#part1").html("Đang quét thẻ"); return 0;
-}
-var hoten=$("#hoten").val(),sobhyt=$("#sobhyt").val();
-$('#mod_check_bhyt_hai').html("Đang KT ..."+sobhyt.slice(-3));
-$('#mod_check_bhyt_hai').attr("disabled", true);
-$("#chinamsinh").prop("checked")?namsinh=$("#namsinh").val().substring(6,10):namsinh=$("#namsinh").val();
-if (namsinh==""||namsinh.search("d")!=-1||namsinh.search("m")!=-1||namsinh.search("y")!=-1) namsinh="1992";
-		$.post( "https://egw.baohiemxahoi.gov.vn/api/token/take", { username: taikhoan, password:matkhau}).done(function( dtake ) {
-			console.log(dtake);
-			if(dtake.maKetQua==200){
-				$.post("https://egw.baohiemxahoi.gov.vn/api/egw/NhanLichSuKCB2018?token="+dtake.APIKey.access_token+"&id_token="+dtake.APIKey.id_token+"&username="+taikhoan+"&password="+matkhau,{maThe:sobhyt,hoTen:hoten,ngaySinh:namsinh}).done(function( d ) {
-					if(d.maKetQua=="003"&&d.maThe==d.maTheMoi){
-							d.maKetQua="003.1";
-							d.gtTheTu=d.gtTheTuMoi;
-							d.gtTheDen=d.gtTheDenMoi;
-						}
-					$('#mod_check_bhyt_hai').html("Đã KT "+sobhyt.slice(0,3)+"..."+sobhyt.slice(-3));
-					$('#mod_check_bhyt_hai').removeAttr("disabled");
-					kqbh=dichketqua(d.maKetQua);
-					if (d.maThe==null){
-						var p1="<b>"+kqbh.msg+"! </b>";
-						$("#part1").html(p1);
-						setColorTrue(kqbh.kq);
-						console.log("END_Không có thông tin thẻ chỉ hiện thông báo");
-					}else{
-						if(d.maKetQua=="070"){
-								switch (d.ngaySinh.length){
-									case 4: 
-											$("#chinamsinh").prop("checked", true);$("#namsinh").val("01/01/"+d.ngaySinh);tempngaysinh="01/01/"+d.ngaySinh;break;
-									case 7: 
-											$("#chinamsinh").prop("checked", true);$("#namsinh").val("01/"+d.ngaySinh);tempngaysinh="01/"+d.ngaySinh;break;
-									case 10:
-											$("#chinamsinh").prop("checked", false);$("#namsinh").val(d.ngaySinh);tempngaysinh=d.ngaySinh;break;
-									default : editColorTrue("#namsinh",1);
-								}
-								$("#tmpnamsinh").val(tempngaysinh);
-								//$("#tmptungay").val(d.gtTheTu);
-								//$("#tmpdenngay").val(d.gtTheDen);
-								$("#tmpnamsinh").click()
-								checkthe();
-								return 0;
-						}
-							var p1="<b>"+kqbh.msg+'! </b>';
-							var p2=d.ghiChu;
-							var p3="";							
-							if(d.maKetQua=="003"&&!$('#sobhyt').prop("disabled")&&d.maDKBD==d.maDKBDMoi){
-								var p3= '<button id="nhapthemoi" class="btn" style="margin: 2px; padding: 2px 3px;">Nhập thẻ mới</button><button id="nhaphanmoi" class="btn" style="margin: 2px; padding: 2px 3px;">Nhập hạn mới</button>';
-							}								
-							
-							$("#part1").html(p1);
-							$("#part2").html(p2);
-							$("#part3").html(p3);
-							$("#nhapthemoi").on("click",function (){
-								$("#sobhyt").val(d.maTheMoi);window.location = 'javascript:$("#sobhyt").keypress()';checkthe();return 0;
-							});
-							//kiem tra lich su kham
-							var lichsu_msg="";
-							var lichsu_num='  <span id="hienlichsu" style="cursor: pointer;text-decoration:underline;">';
-							var lichsu_kcb="<caption>Lịch sửa khám bệnh</caption><tr><th>STT</th><th>Ngày vào viện</th><th>Ngày ra viện</th><th>Tên Bệnh</th><th>Tên CSKCB</th><th>Kết quả</th><th>Tình trạng</th></tr>";
-							var lichsu_kt="<caption>Lịch sửa kiểm tra thẻ trong ngày</caption><tr><th>STT</th><th>User KT</th><th>Ngày kiểm tra</th><th>Mã thông báo</th><th>Thông báo</th></tr>";
-							$("#mod_lichsukt").html("");
-							$("#mod_lichsukcb").html("");
-							if (d.dsLichSuKCB2018!=null){
-								ls=dichlichsu(d.dsLichSuKCB2018[0].maCSKCB,d.dsLichSuKCB2018[0].ngayRa,d.dsLichSuKCB2018[0].tinhTrang,d.dsLichSuKCB2018[0].kqDieuTri,d.dsLichSuKCB2018[0].tenBenh);
-								lichsu_msg=ls.msg;
-								lichsu_num+='LSKB('+d.dsLichSuKCB2018.length+')';
-							if(!ls.kq)$("#mod_bhyt_lichsu_msg").css("color","red");
-							
-							for (i=0;i<d.dsLichSuKCB2018.length&&i<10;i++){
-									lichsu_kcb+=dichlichsuCT(d.dsLichSuKCB2018[i].maCSKCB,d.dsLichSuKCB2018[i].ngayVao,d.dsLichSuKCB2018[i].tinhTrang,d.dsLichSuKCB2018[i].kqDieuTri,d.dsLichSuKCB2018[i].tenBenh,d.dsLichSuKCB2018[i].ngayRa,i+1,dmndk[d.dsLichSuKCB2018[i].maCSKCB]);
-									
-								}
-								//lichsu_kcb="";
-								$("#mod_lichsukcb").html(lichsu_kcb);
-							};
-							if (d.dsLichSuKT2018!=null&&d.dsLichSuKT2018.length>0){
-								lichsu_num+='LSKT('+d.dsLichSuKT2018.length+')';
-								for (i=0;i<d.dsLichSuKT2018.length;i++){
-								lichsu_kt+=dichlichsuKT(d.dsLichSuKT2018[i].userKT,d.dsLichSuKT2018[i].thoiGianKT,d.dsLichSuKT2018[i].maLoi,d.dsLichSuKT2018[i].thongBao,i+1);
-								}
-								$("#mod_lichsukt").html(lichsu_kt);
-							};
-							
-							$("#mod_bhyt_lichsu_msg").html(lichsu_msg+lichsu_num+"</span>");
-							if (d.dsLichSuKCB2018!=null){
-							
-									  $("#tencskcbls").prop('title',dmndk[d.dsLichSuKCB2018[0].maCSKCB]);
-						
-							}
-							$("#hienlichsu").on("click",function(){$("#mod_lichsuct").show();$("body").css("overflow","hidden"); });
-							$("#mod_lichsuct").on("click",function(){$("#mod_lichsuct").hide();$("body").css("overflow","scroll");});
-							//chinh sua
-							if(!$('#hoten').prop("disabled")){
-								$("#hoten").val(d.hoTen.toUpperCase());
-								//$("#sobhyt").val(d.maThe);window.location = 'javascript:$("#sobhyt").keypress()';$("#tungay").val(d.gtTheTu);$("#denngay").val(d.gtTheDen);$("#noidangky").val(d.maDKBD);
-									$("#noidangky").val(d.maDKBD);
-									  $("#noidangky_hienthi").val(dmndk[d.maDKBD]);
-									  $('#noidangky').keyup();
-								
-								if("Nam"==d.gioiTinh){
-									$("#cbgioitinh").val("true");$("#gioitinh").val("1");
-									
-								}else {
-									$("#cbgioitinh").val("false");$("#gioitinh").val("0");
-								}
-								switch (d.ngaySinh.length){
-									case 4: 
-											$("#chinamsinh").prop("checked", true);$("#namsinh").val("01/01/"+d.ngaySinh);tempngaysinh="01/01/"+d.ngaySinh;break;
-									case 7: 
-											$("#chinamsinh").prop("checked", true);$("#namsinh").val("01/"+d.ngaySinh);tempngaysinh="01/"+d.ngaySinh;break;
-									case 10:
-											$("#chinamsinh").prop("checked", false);$("#namsinh").val(d.ngaySinh);tempngaysinh=d.ngaySinh;break;
-									default : editColorTrue("#namsinh",1);
-								}				
-								$("#diachi").val(d.diaChi);$("#manoidoituong").val(d.maKV);
-								setColorTrue(kqbh.kq);
-								console.log("END_Kiểm tra vừa chỉnh sửa hoàn tất");
-								$("#tmpnamsinh").val(tempngaysinh);
-								$("#tmptungay").val(d.gtTheTu);
-								$("#tmpdenngay").val(d.gtTheDen);
-								$("#tmpthoigian_du5namlientuc").val(d.ngayDu5Nam);
-								$("#tmpnamsinh").click();
-								$("#nhaphanmoi").on("click",function (){
-								$("#tmpdenngay").val(d.gtTheDenMoi);
-								$("#tmpnamsinh").click();
-								$("#denngay").css("background","#a76e06");
-								});
-								//blockday("#tungay",$("#tungay").val());
-								//blockday("#denngay",$("#denngay").val());
-								//blockday("#namsinh",$("#namsinh").val());
-							}else {
-								$("#tungay").val()!=d.gtTheTu?editColorTrue("#tungay",0):editColorTrue("#tungay",1);
-								$("#denngay").val()!=d.gtTheDen?editColorTrue("#denngay",0):editColorTrue("#denngay",1);
-								$("#thoigian_du5namlientuc").val()!=d.ngayDu5Nam?editColorTrue("#thoigian_du5namlientuc",0):editColorTrue("#thoigian_du5namlientuc",1);
-								$("#noidangky").val()!=d.maDKBD?editColorTrue("#noidangky",0):editColorTrue("#noidangky",1);
-								$("#diachi").val()!=d.diaChi?editColorTrue("#diachi",0):editColorTrue("#diachi",1);
-								$("#manoidoituong").val()!=d.maKV?editColorTrue("#manoidoituong",0):editColorTrue("#manoidoituong",1);
-								if("Nam"==d.gioiTinh){
-									($("#cbgioitinh").val()!="true"||$("#gioitinh").val()!="1")?editColorTrue("#cbgioitinh",0):editColorTrue("#cbgioitinh",1);
-									
-								}else {
-									($("#cbgioitinh").val()!="false"||$("#gioitinh").val()!="0")?editColorTrue("#cbgioitinh",0):editColorTrue("#cbgioitinh",1);;
-								}
-								switch (d.ngaySinh.length){
-									case 4: 
-											(!$("#chinamsinh").prop("checked")||$("#namsinh").val().substring(6,10)!=d.ngaySinh)?editColorTrue("#namsinh",0):editColorTrue("#namsinh",1);break;
-									case 7: 
-											(!$("#chinamsinh").prop("checked")||$("#namsinh").val().substring(4,10)!=d.ngaySinh)?editColorTrue("#namsinh",0):editColorTrue("#namsinh",1);break;
-									case 10:
-											($("#chinamsinh").prop("checked")||$("#namsinh").val()!=d.ngaySinh)?editColorTrue("#namsinh",0):editColorTrue("#namsinh",1);break;
-									default : editColorTrue("#namsinh",0);
-								}
-								
-								if(kqbh.kq==1){
-									$("#part1").css("color","darkgreen");
-								}
-								if(kqbh.kq==2){
-									$("#part1").css("color","#a76e06");
-								}
-							console.log("END_Không mở sửa thông tin chỉ so khớp dữ liệu");
-							}
-						}
-						//chinh mau
-						
-					}).fail( function (dfail){
-							$("#part1").html("<b>Không nhận được thông tin thẻ từ cổng BHXH_Hiện tại không thể kiểm tra thẻ</b>");
-							console.log("END_Không nhận được thông tin thẻ từ cổng BHXH");
-							$('#mod_check_bhyt_hai').html("Không KT được");
-							$('#mod_check_bhyt_hai').removeAttr("disabled");
-							
-							});
-				
-			}else {
-				$("#part1").html("<b>Không đăng nhập được vào cổng BHXH_Hiện tại không thể kiểm tra thẻ</b>");
-				console.log("END_Không đăng nhập được vào cổng BHXH");
-				 $('#mod_check_bhyt_hai').html("Không KT được");
-				 $('#mod_check_bhyt_hai').removeAttr("disabled");
-			}
-		}).fail( function (dfail){
-			$("#part1").html("<b>Không kết nối được với cổng GDBHXH_Hiện tại không thể kiểm tra thẻ</b>");
-			console.log("END_Lỗi không kết nối được cổng BHXH");
-			$('#mod_check_bhyt_hai').html("Không KT được");
-			$('#mod_check_bhyt_hai').removeAttr("disabled");
-		});
+}function checkthe() {
+        //var baseAddress_old = "http://egw.baohiemxahoi.gov.vn";
+        var baseAddress_old = "http://ctndaotao.bhxh.gov.vn";
+        console.log("START_Check BHYT");
+        resetBHYT();
+        if ($("#sobhyt").val().length > 15) {
+                $("#part1").html("Đang quét thẻ");
+                return 0;
+        }
+        var hoten = $("#hoten").val(),
+                sobhyt = $("#sobhyt").val();
+        $("#mod_check_bhyt_hai").html("Đang KT ..." + sobhyt.slice(-3));
+        $("#mod_check_bhyt_hai").attr("disabled", true);
+        $("#chinamsinh").prop("checked")
+                ? (namsinh = $("#namsinh").val().substring(6, 10))
+                : (namsinh = $("#namsinh").val());
+        if (
+                namsinh == "" ||
+                namsinh.search("d") != -1 ||
+                namsinh.search("m") != -1 ||
+                namsinh.search("y") != -1
+        )
+                namsinh = "1992";
+
+        $.post(baseAddress_old +"/api/token/take", {
+                username: taikhoan,
+                password: matkhau,
+        })
+                .done(function (dtake) {
+                        if (dtake.maKetQua == 200) {
+                                $.post(
+                                        baseAddress_old+"/api/egw/NhanLichSuKCB2018?token=" +
+                                                dtake.APIKey.access_token +
+                                                "&id_token=" +
+                                                dtake.APIKey.id_token +
+                                                "&username=" +
+                                                taikhoan +
+                                                "&password=" +
+                                                matkhau,
+                                        {
+                                                maThe: sobhyt,
+                                                hoTen: hoten,
+                                                ngaySinh: namsinh,
+                                        }
+                                )
+                                        .done(function (d) {
+                                                if (
+                                                        d.maKetQua == "003" &&
+                                                        d.maThe == d.maTheMoi
+                                                ) {
+                                                        d.maKetQua = "003.1";
+                                                        d.gtTheTu =
+                                                                d.gtTheTuMoi;
+                                                        d.gtTheDen =
+                                                                d.gtTheDenMoi;
+                                                }
+                                                $("#mod_check_bhyt_hai").html(
+                                                        "Đã KT " +
+                                                                sobhyt.slice(
+                                                                        0,
+                                                                        3
+                                                                ) +
+                                                                "..." +
+                                                                sobhyt.slice(-3)
+                                                );
+                                                $(
+                                                        "#mod_check_bhyt_hai"
+                                                ).removeAttr("disabled");
+                                                kqbh = dichketqua(d.maKetQua);
+                                                if (d.maThe == null) {
+                                                        var p1 =
+                                                                "<b>" +
+                                                                kqbh.msg +
+                                                                "! </b>";
+                                                        $("#part1").html(p1);
+                                                        setColorTrue(kqbh.kq);
+                                                        console.log(
+                                                                "END_Không có thông tin thẻ chỉ hiện thông báo"
+                                                        );
+                                                } else {
+                                                        if (
+                                                                d.maKetQua ==
+                                                                "070"
+                                                        ) {
+                                                                switch (
+                                                                        d
+                                                                                .ngaySinh
+                                                                                .length
+                                                                ) {
+                                                                        case 4:
+                                                                                $(
+                                                                                        "#chinamsinh"
+                                                                                ).prop(
+                                                                                        "checked",
+                                                                                        true
+                                                                                );
+                                                                                $(
+                                                                                        "#namsinh"
+                                                                                ).val(
+                                                                                        "01/01/" +
+                                                                                                d.ngaySinh
+                                                                                );
+                                                                                tempngaysinh =
+                                                                                        "01/01/" +
+                                                                                        d.ngaySinh;
+                                                                                break;
+                                                                        case 7:
+                                                                                $(
+                                                                                        "#chinamsinh"
+                                                                                ).prop(
+                                                                                        "checked",
+                                                                                        true
+                                                                                );
+                                                                                $(
+                                                                                        "#namsinh"
+                                                                                ).val(
+                                                                                        "01/" +
+                                                                                                d.ngaySinh
+                                                                                );
+                                                                                tempngaysinh =
+                                                                                        "01/" +
+                                                                                        d.ngaySinh;
+                                                                                break;
+                                                                        case 10:
+                                                                                $(
+                                                                                        "#chinamsinh"
+                                                                                ).prop(
+                                                                                        "checked",
+                                                                                        false
+                                                                                );
+                                                                                $(
+                                                                                        "#namsinh"
+                                                                                ).val(
+                                                                                        d.ngaySinh
+                                                                                );
+                                                                                tempngaysinh =
+                                                                                        d.ngaySinh;
+                                                                                break;
+                                                                        default:
+                                                                                editColorTrue(
+                                                                                        "#namsinh",
+                                                                                        1
+                                                                                );
+                                                                }
+                                                                $(
+                                                                        "#tmpnamsinh"
+                                                                ).val(
+                                                                        tempngaysinh
+                                                                );
+                                                                //$("#tmptungay").val(d.gtTheTu);
+                                                                //$("#tmpdenngay").val(d.gtTheDen);
+                                                                $(
+                                                                        "#tmpnamsinh"
+                                                                ).click();
+                                                                checkthe();
+                                                                return 0;
+                                                        }
+                                                        var p1 =
+                                                                "<b>" +
+                                                                kqbh.msg +
+                                                                "! </b>";
+                                                        var p2 = d.ghiChu;
+                                                        var p3 = "";
+                                                        if (
+                                                                d.maKetQua ==
+                                                                        "003" &&
+                                                                !$(
+                                                                        "#sobhyt"
+                                                                ).prop(
+                                                                        "disabled"
+                                                                ) &&
+                                                                d.maDKBD ==
+                                                                        d.maDKBDMoi
+                                                        ) {
+                                                                var p3 =
+                                                                        '<button id="nhapthemoi" class="btn" style="margin: 2px; padding: 2px 3px;">Nhập thẻ mới</button><button id="nhaphanmoi" class="btn" style="margin: 2px; padding: 2px 3px;">Nhập hạn mới</button>';
+                                                        }
+
+                                                        $("#part1").html(p1);
+                                                        $("#part2").html(p2);
+                                                        $("#part3").html(p3);
+                                                        $("#nhapthemoi").on(
+                                                                "click",
+                                                                function () {
+                                                                        $(
+                                                                                "#sobhyt"
+                                                                        ).val(
+                                                                                d.maTheMoi
+                                                                        );
+                                                                        window.location =
+                                                                                'javascript:$("#sobhyt").keypress()';
+                                                                        checkthe();
+                                                                        return 0;
+                                                                }
+                                                        );
+                                                        //kiem tra lich su kham
+                                                        var lichsu_msg = "";
+                                                        var lichsu_num =
+                                                                '  <span id="hienlichsu" style="cursor: pointer;text-decoration:underline;">';
+                                                        var lichsu_kcb =
+                                                                "<caption>Lịch sửa khám bệnh</caption><tr><th>STT</th><th>Ngày vào viện</th><th>Ngày ra viện</th><th>Tên Bệnh</th><th>Tên CSKCB</th><th>Kết quả</th><th>Tình trạng</th></tr>";
+                                                        var lichsu_kt =
+                                                                "<caption>Lịch sửa kiểm tra thẻ trong ngày</caption><tr><th>STT</th><th>User KT</th><th>Ngày kiểm tra</th><th>Mã thông báo</th><th>Thông báo</th></tr>";
+                                                        $("#mod_lichsukt").html(
+                                                                ""
+                                                        );
+                                                        $(
+                                                                "#mod_lichsukcb"
+                                                        ).html("");
+                                                        if (
+                                                                d.dsLichSuKCB2018 !=
+                                                                null
+                                                        ) {
+                                                                ls = dichlichsu(
+                                                                        d
+                                                                                .dsLichSuKCB2018[0]
+                                                                                .maCSKCB,
+                                                                        d
+                                                                                .dsLichSuKCB2018[0]
+                                                                                .ngayRa,
+                                                                        d
+                                                                                .dsLichSuKCB2018[0]
+                                                                                .tinhTrang,
+                                                                        d
+                                                                                .dsLichSuKCB2018[0]
+                                                                                .kqDieuTri,
+                                                                        d
+                                                                                .dsLichSuKCB2018[0]
+                                                                                .tenBenh
+                                                                );
+                                                                lichsu_msg =
+                                                                        ls.msg;
+                                                                lichsu_num +=
+                                                                        "LSKB(" +
+                                                                        d
+                                                                                .dsLichSuKCB2018
+                                                                                .length +
+                                                                        ")";
+                                                                if (!ls.kq)
+                                                                        $(
+                                                                                "#mod_bhyt_lichsu_msg"
+                                                                        ).css(
+                                                                                "color",
+                                                                                "red"
+                                                                        );
+
+                                                                for (
+                                                                        i = 0;
+                                                                        i <
+                                                                                d
+                                                                                        .dsLichSuKCB2018
+                                                                                        .length &&
+                                                                        i < 10;
+                                                                        i++
+                                                                ) {
+                                                                        lichsu_kcb += dichlichsuCT(
+                                                                                d
+                                                                                        .dsLichSuKCB2018[
+                                                                                        i
+                                                                                ]
+                                                                                        .maCSKCB,
+                                                                                d
+                                                                                        .dsLichSuKCB2018[
+                                                                                        i
+                                                                                ]
+                                                                                        .ngayVao,
+                                                                                d
+                                                                                        .dsLichSuKCB2018[
+                                                                                        i
+                                                                                ]
+                                                                                        .tinhTrang,
+                                                                                d
+                                                                                        .dsLichSuKCB2018[
+                                                                                        i
+                                                                                ]
+                                                                                        .kqDieuTri,
+                                                                                d
+                                                                                        .dsLichSuKCB2018[
+                                                                                        i
+                                                                                ]
+                                                                                        .tenBenh,
+                                                                                d
+                                                                                        .dsLichSuKCB2018[
+                                                                                        i
+                                                                                ]
+                                                                                        .ngayRa,
+                                                                                i +
+                                                                                        1,
+                                                                                dmndk[
+                                                                                        d
+                                                                                                .dsLichSuKCB2018[
+                                                                                                i
+                                                                                        ]
+                                                                                                .maCSKCB
+                                                                                ]
+                                                                        );
+                                                                }
+                                                                //lichsu_kcb="";
+                                                                $(
+                                                                        "#mod_lichsukcb"
+                                                                ).html(
+                                                                        lichsu_kcb
+                                                                );
+                                                        }
+                                                        if (
+                                                                d.dsLichSuKT2018 !=
+                                                                        null &&
+                                                                d.dsLichSuKT2018
+                                                                        .length >
+                                                                        0
+                                                        ) {
+                                                                lichsu_num +=
+                                                                        "LSKT(" +
+                                                                        d
+                                                                                .dsLichSuKT2018
+                                                                                .length +
+                                                                        ")";
+                                                                for (
+                                                                        i = 0;
+                                                                        i <
+                                                                        d
+                                                                                .dsLichSuKT2018
+                                                                                .length;
+                                                                        i++
+                                                                ) {
+                                                                        lichsu_kt += dichlichsuKT(
+                                                                                d
+                                                                                        .dsLichSuKT2018[
+                                                                                        i
+                                                                                ]
+                                                                                        .userKT,
+                                                                                d
+                                                                                        .dsLichSuKT2018[
+                                                                                        i
+                                                                                ]
+                                                                                        .thoiGianKT,
+                                                                                d
+                                                                                        .dsLichSuKT2018[
+                                                                                        i
+                                                                                ]
+                                                                                        .maLoi,
+                                                                                d
+                                                                                        .dsLichSuKT2018[
+                                                                                        i
+                                                                                ]
+                                                                                         .thongBao,
+                                                                                i +
+                                                                                          1
+                                                                        );
+                                                                }
+                                                                $(
+                                                                        "#mod_lichsukt"
+                                                                ).html(
+                                                                        lichsu_kt
+                                                                );
+                                                        }
+
+                                                        $(
+                                                                "#mod_bhyt_lichsu_msg"
+                                                        ).html(
+                                                                lichsu_msg +
+                                                                        lichsu_num +
+                                                                        "</span>"
+                                                        );
+                                                        if (
+                                                                d.dsLichSuKCB2018 !=
+                                                                null
+                                                        ) {
+                                                                $(
+                                                                        "#tencskcbls"
+                                                                ).prop(
+                                                                        "title",
+                                                                        dmndk[
+                                                                                d
+                                                                                        .dsLichSuKCB2018[0]
+                                                                                        .maCSKCB
+                                                                        ]
+                                                                );
+                                                        }
+                                                        $("#hienlichsu").on(
+                                                                "click",
+                                                                function () {
+                                                                        $(
+                                                                                "#mod_lichsuct"
+                                                                        ).show();
+                                                                        $(
+                                                                                "body"
+                                                                        ).css(
+                                                                                "overflow",
+                                                                                "hidden"
+                                                                        );
+                                                                }
+                                                        );
+                                                        $("#mod_lichsuct").on(
+                                                                "click",
+                                                                function () {
+                                                                        $(
+                                                                                "#mod_lichsuct"
+                                                                        ).hide();
+                                                                        $(
+                                                                                "body"
+                                                                        ).css(
+                                                                                "overflow",
+                                                                                "scroll"
+                                                                        );
+                                                                }
+                                                        );
+                                                        //chinh sua
+                                                        if (
+                                                                !$(
+                                                                        "#hoten"
+                                                                ).prop(
+                                                                        "disabled"
+                                                                )
+                                                        ) {
+                                                                $("#hoten").val(
+                                                                        d.hoTen.toUpperCase()
+                                                                );
+                                                                //$("#sobhyt").val(d.maThe);window.location = 'javascript:$("#sobhyt").keypress()';$("#tungay").val(d.gtTheTu);$("#denngay").val(d.gtTheDen);$("#noidangky").val(d.maDKBD);
+                                                                $(
+                                                                        "#noidangky"
+                                                                ).val(d.maDKBD);
+                                                                $(
+                                                                        "#noidangky_hienthi"
+                                                                ).val(
+                                                                        dmndk[
+                                                                                d
+                                                                                        .maDKBD
+                                                                        ]
+                                                                );
+                                                                $(
+                                                                        "#noidangky"
+                                                                ).keyup();
+
+                                                                if (
+                                                                        "Nam" ==
+                                                                        d.gioiTinh
+                                                                ) {
+                                                                        $(
+                                                                                "#cbgioitinh"
+                                                                        ).val(
+                                                                                "true"
+                                                                        );
+                                                                        $(
+                                                                                "#gioitinh"
+                                                                        ).val(
+                                                                                "1"
+                                                                        );
+                                                                } else {
+                                                                        $(
+                                                                                "#cbgioitinh"
+                                                                        ).val(
+                                                                                "false"
+                                                                        );
+                                                                        $(
+                                                                                "#gioitinh"
+                                                                        ).val(
+                                                                                "0"
+                                                                        );
+                                                                }
+                                                                switch (
+                                                                        d
+                                                                                .ngaySinh
+                                                                                .length
+                                                                ) {
+                                                                        case 4:
+                                                                                $(
+                                                                                        "#chinamsinh"
+                                                                                ).prop(
+                                                                                        "checked",
+                                                                                        true
+                                                                                );
+                                                                                $(
+                                                                                        "#namsinh"
+                                                                                ).val(
+                                                                                        "01/01/" +
+                                                                                                d.ngaySinh
+                                                                                );
+                                                                                tempngaysinh =
+                                                                                        "01/01/" +
+                                                                                        d.ngaySinh;
+                                                                                break;
+                                                                        case 7:
+                                                                                $(
+                                                                                        "#chinamsinh"
+                                                                                ).prop(
+                                                                                        "checked",
+                                                                                        true
+                                                                                );
+                                                                                $(
+                                                                                        "#namsinh"
+                                                                                ).val(
+                                                                                        "01/" +
+                                                                                                d.ngaySinh
+                                                                                );
+                                                                                tempngaysinh =
+                                                                                        "01/" +
+                                                                                        d.ngaySinh;
+                                                                                break;
+                                                                        case 10:
+                                                                                $(
+                                                                                        "#chinamsinh"
+                                                                                ).prop(
+                                                                                        "checked",
+                                                                                        false
+                                                                                );
+                                                                                $(
+                                                                                        "#namsinh"
+                                                                                ).val(
+                                                                                        d.ngaySinh
+                                                                                );
+                                                                                tempngaysinh =
+                                                                                        d.ngaySinh;
+                                                                                break;
+                                                                        default:
+                                                                                editColorTrue(
+                                                                                        "#namsinh",
+                                                                                        1
+                                                                                );
+                                                                }
+                                                                $(
+                                                                        "#diachi"
+                                                                ).val(d.diaChi);
+                                                                $(
+                                                                        "#manoidoituong"
+                                                                ).val(d.maKV);
+                                                                setColorTrue(
+                                                                        kqbh.kq
+                                                                );
+                                                                console.log(
+                                                                        "END_Kiểm tra vừa chỉnh sửa hoàn tất"
+                                                                );
+                                                                $(
+                                                                        "#tmpnamsinh"
+                                                                ).val(
+                                                                        tempngaysinh
+                                                                );
+                                                                $(
+                                                                        "#tmptungay"
+                                                                ).val(
+                                                                        d.gtTheTu
+                                                                );
+                                                                $(
+                                                                        "#tmpdenngay"
+                                                                ).val(
+                                                                        d.gtTheDen
+                                                                );
+                                                                $(
+                                                                        "#tmpthoigian_du5namlientuc"
+                                                                ).val(
+                                                                        d.ngayDu5Nam
+                                                                );
+                                                                $(
+                                                                        "#tmpnamsinh"
+                                                                ).click();
+                                                                $(
+                                                                        "#nhaphanmoi"
+                                                                ).on(
+                                                                        "click",
+                                                                        function () {
+                                                                                $(
+                                                                                        "#tmpdenngay"
+                                                                                ).val(
+                                                                                        d.gtTheDenMoi
+                                                                                );
+                                                                                $(
+                                                                                        "#tmpnamsinh"
+                                                                                ).click();
+                                                                                $(
+                                                                                        "#denngay"
+                                                                                ).css(
+                                                                                        "background",
+                                                                                        "#a76e06"
+                                                                                );
+                                                                        }
+                                                                );
+                                                                //blockday("#tungay",$("#tungay").val());
+                                                                //blockday("#denngay",$("#denngay").val());
+                                                                //blockday("#namsinh",$("#namsinh").val());
+                                                        } else {
+                                                                $(
+                                                                        "#tungay"
+                                                                ).val() !=
+                                                                d.gtTheTu
+                                                                        ? editColorTrue(
+                                                                                  "#tungay",
+                                                                                  0
+                                                                          )
+                                                                        : editColorTrue(
+                                                                                  "#tungay",
+                                                                                  1
+                                                                          );
+                                                                $(
+                                                                        "#denngay"
+                                                                ).val() !=
+                                                                d.gtTheDen
+                                                                        ? editColorTrue(
+                                                                                  "#denngay",
+                                                                                  0
+                                                                          )
+                                                                        : editColorTrue(
+                                                                                  "#denngay",
+                                                                                  1
+                                                                          );
+                                                                $(
+                                                                        "#thoigian_du5namlientuc"
+                                                                ).val() !=
+                                                                d.ngayDu5Nam
+                                                                        ? editColorTrue(
+                                                                                  "#thoigian_du5namlientuc",
+                                                                                  0
+                                                                          )
+                                                                        : editColorTrue(
+                                                                                  "#thoigian_du5namlientuc",
+                                                                                  1
+                                                                          );
+                                                                $(
+                                                                        "#noidangky"
+                                                                ).val() !=
+                                                                d.maDKBD
+                                                                        ? editColorTrue(
+                                                                                  "#noidangky",
+                                                                                  0
+                                                                          )
+                                                                        : editColorTrue(
+                                                                                  "#noidangky",
+                                                                                  1
+                                                                          );
+                                                                $(
+                                                                        "#diachi"
+                                                                ).val() !=
+                                                                d.diaChi
+                                                                        ? editColorTrue(
+                                                                                  "#diachi",
+                                                                                  0
+                                                                          )
+                                                                        : editColorTrue(
+                                                                                  "#diachi",
+                                                                                  1
+                                                                          );
+                                                                $(
+                                                                        "#manoidoituong"
+                                                                ).val() !=
+                                                                d.maKV
+                                                                        ? editColorTrue(
+                                                                                  "#manoidoituong",
+                                                                                  0
+                                                                          )
+                                                                        : editColorTrue(
+                                                                                  "#manoidoituong",
+                                                                                  1
+                                                                          );
+                                                                if (
+                                                                        "Nam" ==
+                                                                        d.gioiTinh
+                                                                ) {
+                                                                        $(
+                                                                                "#cbgioitinh"
+                                                                        ).val() !=
+                                                                                "true" ||
+                                                                        $(
+                                                                                "#gioitinh"
+                                                                        ).val() !=
+                                                                                "1"
+                                                                                ? editColorTrue(
+                                                                                          "#cbgioitinh",
+                                                                                          0
+                                                                                  )
+                                                                                : editColorTrue(
+                                                                                          "#cbgioitinh",
+                                                                                          1
+                                                                                  );
+                                                                } else {
+                                                                        $(
+                                                                                "#cbgioitinh"
+                                                                        ).val() !=
+                                                                                "false" ||
+                                                                        $(
+                                                                                "#gioitinh"
+                                                                        ).val() !=
+                                                                                "0"
+                                                                                ? editColorTrue(
+                                                                                          "#cbgioitinh",
+                                                                                          0
+                                                                                  )
+                                                                                : editColorTrue(
+                                                                                          "#cbgioitinh",
+                                                                                          1
+                                                                                  );
+                                                                }
+                                                                switch (
+                                                                        d
+                                                                                .ngaySinh
+                                                                                .length
+                                                                ) {
+                                                                        case 4:
+                                                                                !$(
+                                                                                        "#chinamsinh"
+                                                                                ).prop(
+                                                                                        "checked"
+                                                                                ) ||
+                                                                                $(
+                                                                                        "#namsinh"
+                                                                                )
+                                                                                        .val()
+                                                                                        .substring(
+                                                                                                6,
+                                                                                                10
+                                                                                        ) !=
+                                                                                        d.ngaySinh
+                                                                                        ? editColorTrue(
+                                                                                                  "#namsinh",
+                                                                                                  0
+                                                                                          )
+                                                                                        : editColorTrue(
+                                                                                                  "#namsinh",
+                                                                                                  1
+                                                                                          );
+                                                                                break;
+                                                                        case 7:
+                                                                                !$(
+                                                                                        "#chinamsinh"
+                                                                                ).prop(
+                                                                                        "checked"
+                                                                                ) ||
+                                                                                $(
+                                                                                        "#namsinh"
+                                                                                )
+                                                                                        .val()
+                                                                                        .substring(
+                                                                                                4,
+                                                                                                10
+                                                                                        ) !=
+                                                                                        d.ngaySinh
+                                                                                        ? editColorTrue(
+                                                                                                  "#namsinh",
+                                                                                                  0
+                                                                                          )
+                                                                                        : editColorTrue(
+                                                                                                  "#namsinh",
+                                                                                                  1
+                                                                                          );
+                                                                                break;
+                                                                        case 10:
+                                                                                $(
+                                                                                        "#chinamsinh"
+                                                                                ).prop(
+                                                                                        "checked"
+                                                                                ) ||
+                                                                                $(
+                                                                                        "#namsinh"
+                                                                                ).val() !=
+                                                                                        d.ngaySinh
+                                                                                        ? editColorTrue(
+                                                                                                  "#namsinh",
+                                                                                                  0
+                                                                                          )
+                                                                                        : editColorTrue(
+                                                                                                  "#namsinh",
+                                                                                                  1
+                                                                                          );
+                                                                                break;
+                                                                        default:
+                                                                                editColorTrue(
+                                                                                        "#namsinh",
+                                                                                        0
+                                                                                );
+                                                                }
+
+                                                                if (
+                                                                        kqbh.kq ==
+                                                                        1
+                                                                ) {
+                                                                        $(
+                                                                                "#part1"
+                                                                        ).css(
+                                                                                "color",
+                                                                                "darkgreen"
+                                                                        );
+                                                                }
+                                                                if (
+                                                                        kqbh.kq ==
+                                                                        2
+                                                                ) {
+                                                                        $(
+                                                                                "#part1"
+                                                                        ).css(
+                                                                                "color",
+                                                                                "#a76e06"
+                                                                        );
+                                                                }
+                                                                console.log(
+                                                                        "END_Không mở sửa thông tin chỉ so khớp dữ liệu"
+                                                                );
+                                                        }
+                                                }
+                                                //chinh mau
+                                        })
+                                        .fail(function (dfail) {
+                                                $("#part1").html(
+                                                        "<b>Không nhận được thông tin thẻ từ cổng BHXH_Hiện tại không thể kiểm tra thẻ</b>"
+                                                );
+                                                console.log(
+                                                        "END_Không nhận được thông tin thẻ từ cổng BHXH"
+                                                );
+                                                $("#mod_check_bhyt_hai").html(
+                                                        "Không KT được"
+                                                );
+                                                $(
+                                                        "#mod_check_bhyt_hai"
+                                                ).removeAttr("disabled");
+                                        });
+                        } else {
+                                $("#part1").html(
+                                        "<b>Không đăng nhập được vào cổng BHXH_Hiện tại không thể kiểm tra thẻ</b>"
+                                );
+                                console.log(
+                                        "END_Không đăng nhập được vào cổng BHXH"
+                                );
+                                $("#mod_check_bhyt_hai").html("Không KT được");
+                                $("#mod_check_bhyt_hai").removeAttr("disabled");
+                        }
+                })
+                .fail(function (dfail) {
+                        $("#part1").html(
+                                "<b>Không kết nối được với cổng GDBHXH_Hiện tại không thể kiểm tra thẻ</b>"
+                        );
+                        console.log("END_Lỗi không kết nối được cổng BHXH");
+                        $("#mod_check_bhyt_hai").html("Không KT được");
+                        $("#mod_check_bhyt_hai").removeAttr("disabled");
+                });
 }
   //0: sai thẻ -1:đúng -2:cảnh báo- 3:sai họ tên -4: xóa màu
   function setColorTrue(value){

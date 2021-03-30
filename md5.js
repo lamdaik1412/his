@@ -88,8 +88,8 @@ function khoitao() {
 	console.log("Khởi tạo thành công");
 }
 function checkthe() {
-	//var baseAddress_old = "https://egw.baohiemxahoi.gov.vn";
-	var baseAddress_old = "https://ctndaotao.bhxh.gov.vn";
+	var baseAddress_old = "https://egw.baohiemxahoi.gov.vn";
+	//var baseAddress_old = "https://ctndaotao.bhxh.gov.vn";
 	console.log("START_Check BHYT");
 	resetBHYT();
 	if ($("#sobhyt").val().length > 15) {

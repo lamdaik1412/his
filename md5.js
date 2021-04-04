@@ -141,18 +141,27 @@ function checkthe() {
 							d.gtTheDen = d.gtTheDenMoi;
 						}
 						$("#sobhyt").val(d.maThe);
-						$("#chuoinhandang").val(d.maThe.substring(0, 3));
-						if (
-							d.maThe.substring(3, 2) == 1 ||
-							d.maThe.substring(3, 2) == 5 ||
-							d.maThe.substring(3, 2) == 2
-						) {
-							$("#tlmiengiam").val(100);
-						} else if (d.maThe.substring(3, 2) == 3) {
-							$("#tlmiengiam").val(95);
-						} else if (d.maThe.substring(3, 2) == 4) {
-							$("#tlmiengiam").val(80);
-						}
+						var chuoinhandang = d.mathongbao.substring(0, 3);
+						$("#chuoinhandang").val(chuoinhandang);
+						$.get(
+							"https://yte-vinhlong.vnpthis.vn/web_his/kiemtrathebhyt?madt=" +
+								chuoinhandang
+						).done(function (dtuong) {
+							console.log(dtuong);
+						});
+
+						// if (
+						// 	d.maThe.substring(3, 2) == 1 ||
+						// 	d.maThe.substring(3, 2) == 5 ||
+						// 	d.maThe.substring(3, 2) == 2
+						// ) {
+						// 	$("#tlmiengiam").val(100);
+						// } else if (d.maThe.substring(3, 2) == 3) {
+						// 	$("#tlmiengiam").val(95);
+						// } else if (d.maThe.substring(3, 2) == 4) {
+						// 	$("#tlmiengiam").val(80);
+						// }
+						$.get();
 						$("#mod_check_bhyt_hai").html(
 							"Đã KT " +
 								sobhyt.slice(0, 3) +

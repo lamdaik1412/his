@@ -141,7 +141,7 @@ function checkthe() {
 							d.gtTheDen = d.gtTheDenMoi;
 						}
 						$("#sobhyt").val(d.maThe);
-						var chuoinhandang = d.mathongbao.substring(0, 3);
+						var chuoinhandang = d.maThe.substring(0, 3);
 						$("#chuoinhandang").val(chuoinhandang);
 						$.get(
 							"https://yte-vinhlong.vnpthis.vn/web_his/kiemtrathebhyt?madt=" +

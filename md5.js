@@ -108,17 +108,19 @@ function checkthe() {
 		namsinh.search("d") != -1 ||
 		namsinh.search("m") != -1 ||
 		namsinh.search("y") != -1
-	)
+	) {
 		namsinh = "1992";
+	}
 
-	$.post("https://egw.baohiemxahoi.gov.vn/api/token/take", {
+	$.post(baseAddress_old + "/api/token/take", {
 		username: taikhoan,
 		password: matkhau,
 	})
 		.done(function (dtake) {
-		console.log(dtake);
 			if (dtake.maKetQua == 200) {
-				$.post("https://egw.baohiemxahoi.gov.vn/api/egw/NhanLichSuKCB2018?token=" +
+				$.post(
+					baseAddress_old +
+						"/api/egw/NhanLichSuKCB2018?token=" +
 						dtake.APIKey.access_token +
 						"&id_token=" +
 						dtake.APIKey.id_token +
@@ -137,9 +139,20 @@ function checkthe() {
 							d.maKetQua = "003.1";
 							d.gtTheTu = d.gtTheTuMoi;
 							d.gtTheDen = d.gtTheDenMoi;
-							
 						}
-					$("#sobhyt").val(d.maThe);
+						$("#sobhyt").val(d.maThe);
+						$("#chuoinhandang").val(d.maThe.substring(0, 3));
+						if (
+							d.maThe.substring(2, 1) == 1 ||
+							d.maThe.substring(2, 1) == 5 ||
+							d.maThe.substring(2, 1) == 2
+						) {
+							$("#tlmiengiam").val(100);
+						} else if (d.maThe.substring(2, 1) == 3) {
+							$("#tlmiengiam").val(95);
+						} else if (d.maThe.substring(2, 1) == 4) {
+							$("#tlmiengiam").val(80);
+						}
 						$("#mod_check_bhyt_hai").html(
 							"Đã KT " +
 								sobhyt.slice(0, 3) +

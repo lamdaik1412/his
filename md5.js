@@ -143,14 +143,14 @@ function checkthe() {
 						$("#sobhyt").val(d.maThe);
 						$("#chuoinhandang").val(d.maThe.substring(0, 3));
 						if (
-							d.maThe.substring(2, 1) == 1 ||
-							d.maThe.substring(2, 1) == 5 ||
-							d.maThe.substring(2, 1) == 2
+							d.maThe.substring(3, 2) == 1 ||
+							d.maThe.substring(3, 2) == 5 ||
+							d.maThe.substring(3, 2) == 2
 						) {
 							$("#tlmiengiam").val(100);
-						} else if (d.maThe.substring(2, 1) == 3) {
+						} else if (d.maThe.substring(3, 2) == 3) {
 							$("#tlmiengiam").val(95);
-						} else if (d.maThe.substring(2, 1) == 4) {
+						} else if (d.maThe.substring(3, 2) == 4) {
 							$("#tlmiengiam").val(80);
 						}
 						$("#mod_check_bhyt_hai").html(

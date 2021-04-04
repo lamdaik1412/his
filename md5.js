@@ -147,7 +147,9 @@ function checkthe() {
 							"https://yte-vinhlong.vnpthis.vn/web_his/kiemtrathebhyt?madt=" +
 								chuoinhandang
 						).done(function (dtuong) {
-							console.log(dtuong);
+							var arrDT = dtuong.split(":");
+							$("#doituongthe").val(arrDT[0]);
+							$("#tlmiengiam").val(arrDT[1]);
 						});
 
 						// if (
